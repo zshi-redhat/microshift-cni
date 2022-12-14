@@ -16,13 +16,13 @@ func List() ([]string, error) {
 	out := make([]string, 0)
 	files, err := content.ReadDir("ovn-kubernetes")
 	if err != nil {
-		return err
+		return out, err
 	}
 	for _, f := range files {
 		fp := filepath.Join("ovn-kubernetes", f.Name())
 		out = append(out, fp)
 	}
-	return out
+	return out, nil
 }
 
 func MustAsset(name string) []byte {

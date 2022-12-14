@@ -4,11 +4,10 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	embedded "github.com/zshi-redhat/microshift-cni/assets"
 )
 
-func addRunFlags(cmd *cobra.Command) {
-	flags := cmd.Flags()
-}
+func addRunFlags(cmd *cobra.Command) {}
 
 func NewManifestCommand() *cobra.Command {
 	//	cfg := config.newOVNKubernetesConfigFromFile()
@@ -17,7 +16,8 @@ func NewManifestCommand() *cobra.Command {
 		Use:   "manifest",
 		Short: "Get OVNKubernetes Manifest",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return Manifest()
+			Manifest()
+			return nil
 		},
 	}
 	addRunFlags(cmd)
@@ -25,8 +25,6 @@ func NewManifestCommand() *cobra.Command {
 }
 
 func Manifest() {
-	out := make([][]byte, 0)
-
 	files, err := embedded.List()
 	if err != nil {
 		return
@@ -37,7 +35,6 @@ func Manifest() {
 		if err != nil {
 			return
 		}
-		out = append(out, bytes)
+		fmt.Println(string(bytes))
 	}
-	fmt.Println(out)
 }

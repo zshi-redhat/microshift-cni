@@ -5,7 +5,6 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/component-base/cli"
 
 	cmds "github.com/zshi-redhat/microshift-cni/pkg/cmd"
@@ -30,8 +29,6 @@ func newCommand() *cobra.Command {
 	cmd.SetHelpFunc(func(command *cobra.Command, strings []string) {
 		originalHelpFunc(command, strings)
 	})
-
-	ioStreams := genericclioptions.IOStreams{In: os.Stdin, Out: os.Stdout, ErrOut: os.Stderr}
 
 	cmd.AddCommand(cmds.NewManifestCommand())
 	return cmd
