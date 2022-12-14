@@ -16,19 +16,24 @@ func NewManifestCommand() *cobra.Command {
 		Use:   "manifest",
 		Short: "Get OVNKubernetes Manifest",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			Manifest()
-			return nil
+			return Manifest()
 		},
 	}
 	addRunFlags(cmd)
 	return cmd
 }
 
-func Manifest() {
+func Manifest() error {
 	files, err := embedded.List()
 	if err != nil {
-		return
+		return err
 	}
+
+	for _, f := range files {
+		fmt.Println(f)
+	}
+
+	/* print manifest content to stdout
 
 	for _, f := range files {
 		bytes, err := embedded.Asset(f)
@@ -37,4 +42,7 @@ func Manifest() {
 		}
 		fmt.Println(string(bytes))
 	}
+
+	*/
+	return nil
 }
