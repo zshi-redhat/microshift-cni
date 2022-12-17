@@ -17,7 +17,6 @@ limitations under the License.
 package featuregate
 
 import (
-	"context"
 	"fmt"
 	"sort"
 	"strconv"
@@ -28,7 +27,6 @@ import (
 	"github.com/spf13/pflag"
 
 	"k8s.io/apimachinery/pkg/util/naming"
-	featuremetrics "k8s.io/component-base/metrics/prometheus/feature"
 	"k8s.io/klog/v2"
 )
 
@@ -113,8 +111,6 @@ type MutableFeatureGate interface {
 	Add(features map[Feature]FeatureSpec) error
 	// GetAll returns a copy of the map of known feature names to feature specs.
 	GetAll() map[Feature]FeatureSpec
-	// AddMetrics adds feature enablement metrics
-	AddMetrics()
 }
 
 // featureGate implements FeatureGate as well as pflag.Value for flag parsing.
@@ -224,7 +220,8 @@ func (f *featureGate) SetFromMap(m map[string]bool) error {
 		k := Feature(k)
 		featureSpec, ok := known[k]
 		if !ok {
-			return fmt.Errorf("unrecognized feature gate: %s", k)
+			klog.Warningf("unrecognized feature gate: %s", k)
+			continue
 		}
 		if featureSpec.LockToDefault && featureSpec.Default != v {
 			return fmt.Errorf("cannot set feature gate %v to %v, feature is locked to %v", k, v, featureSpec.Default)
@@ -331,12 +328,6 @@ func (f *featureGate) AddFlag(fs *pflag.FlagSet) {
 	fs.Var(f, flagName, ""+
 		"A set of key=value pairs that describe feature gates for alpha/experimental features. "+
 		"Options are:\n"+strings.Join(known, "\n"))
-}
-
-func (f *featureGate) AddMetrics() {
-	for feature, featureSpec := range f.GetAll() {
-		featuremetrics.RecordFeatureInfo(context.Background(), string(feature), string(featureSpec.PreRelease), f.Enabled(feature))
-	}
 }
 
 // KnownFeatures returns a slice of strings describing the FeatureGate's known features.

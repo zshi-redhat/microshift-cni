@@ -127,12 +127,12 @@ func ApplyDeployments(dps []string, render RenderFunc, params RenderParams, kube
 	return applyApps(dps, dp, render, params, embed)
 }
 
-func ApplyDaemonSets(apps []string, render RenderFunc, params RenderParams, kubeconfigPath string, embedArg ...bool) error {
+func ApplyDaemonSets(apps []string, params RenderParams, kubeconfigPath string, embedArg ...bool) error {
 	embed := true
 	if len(embedArg) > 0 {
 		embed = embedArg[0]
 	}
 	ds := &dsApplier{}
 	ds.Client = appsClient(kubeconfigPath)
-	return applyApps(apps, ds, render, params, embed)
+	return applyApps(apps, ds, renderTemplate, params, embed)
 }

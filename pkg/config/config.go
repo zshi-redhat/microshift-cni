@@ -5,6 +5,6 @@ type MicroshiftConfig struct {
 	Kubeconfig string `json:"kubeconfig,omitempty"`
 }
 
-func NewMicroshiftConfig() {
+func NewMicroshiftConfig() *MicroshiftConfig {
 	return &MicroshiftConfig{}
 }

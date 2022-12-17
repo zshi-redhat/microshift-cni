@@ -223,14 +223,14 @@ func ApplyServiceAccounts(cores []string, kubeconfigPath string, embedArg ...boo
 	return applyCore(cores, sa, nil, nil, embed)
 }
 
-func ApplyConfigMaps(cores []string, render RenderFunc, params RenderParams, kubeconfigPath string, embedArg ...bool) error {
+func ApplyConfigMaps(cores []string, params RenderParams, kubeconfigPath string, embedArg ...bool) error {
 	embed := true
 	if len(embedArg) > 0 {
 		embed = embedArg[0]
 	}
 	cm := &cmApplier{}
 	cm.Client = coreClient(kubeconfigPath)
-	return applyCore(cores, cm, render, params, embed)
+	return applyCore(cores, cm, renderTemplate, params, embed)
 }
 
 func ApplyConfigMapWithData(cmPath string, data map[string]string, kubeconfigPath string, embedArg ...bool) error {
