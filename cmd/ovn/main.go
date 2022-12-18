@@ -18,8 +18,9 @@ func main() {
 }
 
 func addFlags(cmd *cobra.Command, cfg *mcfg.MicroshiftConfig) {
-	cmd.Flags().String("servicecidr", cfg.Cluster.ServiceCIDR, "The Kubernetes service network range")
-	cmd.Flags().String("clustercidr", cfg.Cluster.ClusterCIDR, "The Kubernetes cluster network range")
+	cmd.Flags().String("kubeconfig", "", "The absolute path for Kubernetes kubeconfig file")
+	cmd.Flags().String("service-cidr", cfg.Cluster.ServiceCIDR, "The Kubernetes service network range")
+	cmd.Flags().String("cluster-cidr", cfg.Cluster.ClusterCIDR, "The Kubernetes cluster network range")
 }
 
 func newCommand() *cobra.Command {
@@ -32,7 +33,7 @@ func newCommand() *cobra.Command {
 	addFlags(cmd, shiftConfig)
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		return ovn.InstallOVNKubernetes(shiftConfig)
+		return ovn.InstallOVNKubernetes(shiftConfig, cmd.Flags())
 	}
 	return cmd
 }

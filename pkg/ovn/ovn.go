@@ -4,6 +4,7 @@ import (
 	"path/filepath"
 
 	mcfg "github.com/openshift/microshift/pkg/config"
+	"github.com/spf13/pflag"
 	"github.com/zshi-redhat/microshift-cni/pkg/assets"
 	"github.com/zshi-redhat/microshift-cni/pkg/utils"
 	"k8s.io/klog/v2"
@@ -13,8 +14,13 @@ const (
 	manifestDir = "/etc/microshift/ovn"
 )
 
-func InstallOVNKubernetes(shiftConfig *mcfg.MicroshiftConfig) error {
+func InstallOVNKubernetes(shiftConfig *mcfg.MicroshiftConfig, flags *pflag.FlagSet) error {
 	var err error
+
+	err = ReadFromCmdLine(shiftConfig, flags)
+	if err != nil {
+		return err
+	}
 
 	ovnConfig, err := newOVNKubernetesConfig()
 	if err != nil {
@@ -31,8 +37,19 @@ func InstallOVNKubernetes(shiftConfig *mcfg.MicroshiftConfig) error {
 	return nil
 }
 
+func ReadFromCmdLine(shiftConfig *mcfg.MicroshiftConfig, flags *pflag.FlagSet) error {
+	if s, err := flags.GetString("cluster-cidr"); err == nil && flags.Changed("cluster-cidr") {
+		shiftConfig.Cluster.ClusterCIDR = s
+	}
+	if s, err := flags.GetString("service-cidr"); err == nil && flags.Changed("service-cidr") {
+		shiftConfig.Cluster.ServiceCIDR = s
+	}
+	return nil
+}
+
 // createGatewayBridges creates gateway bridges: br-ex and br-ex1
 func createGatewayBridges() error {
+	// TODO: use node IP from k8s node object to configure br-ex
 	return utils.RunCommand("configure-ovs.sh", "OVNKubernetes")
 
 }
@@ -94,9 +111,12 @@ func applyManifests(ovnConfig *OVNKubernetesConfig, shiftConfig *mcfg.Microshift
 		return err
 	}
 	extraParams := assets.RenderParams{
-		"MTU":            ovnConfig.MTU,
-		"KubeconfigPath": kubeconfigPath,
-		"KubeconfigDir":  filepath.Join("/var/lib", "/resources/kubeadmin"),
+		"MTU":                       ovnConfig.MTU,
+		"KubeconfigPath":            kubeconfigPath,
+		"KubeconfigDir":             filepath.Join("/var/lib", "/resources/kubeadmin"),
+		"ClusterCIDR":               shiftConfig.Cluster.ClusterCIDR,
+		"ServiceCIDR":               shiftConfig.Cluster.ServiceCIDR,
+		"ovn_kubernetes_microshift": "quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:34faa03671a950607aec06a2ba515426d09f80a38101d2e91a508b5fd5316116",
 	}
 	if err := assets.ApplyConfigMaps(cm, extraParams, kubeconfigPath); err != nil {
 		klog.Warningf("Failed to apply configMap %v %v", cm, err)
