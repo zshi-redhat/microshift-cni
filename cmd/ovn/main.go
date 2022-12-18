@@ -3,7 +3,6 @@ package main
 import (
 	"os"
 
-	mcfg "github.com/openshift/microshift/pkg/config"
 	"github.com/spf13/cobra"
 	"github.com/zshi-redhat/microshift-cni/pkg/config"
 	"github.com/zshi-redhat/microshift-cni/pkg/ovn"
@@ -17,10 +16,10 @@ func main() {
 	os.Exit(code)
 }
 
-func addFlags(cmd *cobra.Command, cfg *mcfg.MicroshiftConfig) {
-	cmd.Flags().String("kubeconfig", "", "The absolute path for Kubernetes kubeconfig file")
-	cmd.Flags().String("service-cidr", cfg.Cluster.ServiceCIDR, "The Kubernetes service network range")
-	cmd.Flags().String("cluster-cidr", cfg.Cluster.ClusterCIDR, "The Kubernetes cluster network range")
+func addFlags(cmd *cobra.Command, cfg *config.MicroshiftConfig) {
+	cmd.Flags().String("kubeconfig", cfg.Kubeconfig, "The absolute path for Kubernetes kubeconfig file")
+	cmd.Flags().String("service-cidr", cfg.Config.Cluster.ServiceCIDR, "The Kubernetes service network range")
+	cmd.Flags().String("cluster-cidr", cfg.Config.Cluster.ClusterCIDR, "The Kubernetes cluster network range")
 }
 
 func newCommand() *cobra.Command {

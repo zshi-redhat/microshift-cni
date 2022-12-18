@@ -6,6 +6,7 @@ import (
 	mcfg "github.com/openshift/microshift/pkg/config"
 	"github.com/spf13/pflag"
 	"github.com/zshi-redhat/microshift-cni/pkg/assets"
+	"github.com/zshi-redhat/microshift-cni/pkg/config"
 	"github.com/zshi-redhat/microshift-cni/pkg/utils"
 	"k8s.io/klog/v2"
 )
@@ -14,7 +15,7 @@ const (
 	manifestDir = "/etc/microshift/ovn"
 )
 
-func InstallOVNKubernetes(shiftConfig *mcfg.MicroshiftConfig, flags *pflag.FlagSet) error {
+func InstallOVNKubernetes(shiftConfig *config.MicroshiftConfig, flags *pflag.FlagSet) error {
 	var err error
 
 	err = ReadFromCmdLine(shiftConfig, flags)
@@ -37,12 +38,15 @@ func InstallOVNKubernetes(shiftConfig *mcfg.MicroshiftConfig, flags *pflag.FlagS
 	return nil
 }
 
-func ReadFromCmdLine(shiftConfig *mcfg.MicroshiftConfig, flags *pflag.FlagSet) error {
+func ReadFromCmdLine(shiftConfig *config.MicroshiftConfig, flags *pflag.FlagSet) error {
+	if s, err := flags.GetString("kubeconfig"); err == nil && flags.Changed("kubeconfig") {
+		shiftConfig.Kubeconfig = s
+	}
 	if s, err := flags.GetString("cluster-cidr"); err == nil && flags.Changed("cluster-cidr") {
-		shiftConfig.Cluster.ClusterCIDR = s
+		shiftConfig.Config.Cluster.ClusterCIDR = s
 	}
 	if s, err := flags.GetString("service-cidr"); err == nil && flags.Changed("service-cidr") {
-		shiftConfig.Cluster.ServiceCIDR = s
+		shiftConfig.Config.Cluster.ServiceCIDR = s
 	}
 	return nil
 }
@@ -54,7 +58,7 @@ func createGatewayBridges() error {
 
 }
 
-func applyManifests(ovnConfig *OVNKubernetesConfig, shiftConfig *mcfg.MicroshiftConfig) error {
+func applyManifests(ovnConfig *OVNKubernetesConfig, shiftConfig *config.MicroshiftConfig) error {
 	var (
 		ns = []string{
 			"ovn-kubernetes/namespace.yaml",
@@ -84,7 +88,10 @@ func applyManifests(ovnConfig *OVNKubernetesConfig, shiftConfig *mcfg.Microshift
 		}
 	)
 
-	kubeconfigPath := shiftConfig.KubeConfigPath(mcfg.KubeAdmin)
+	var kubeconfigPath string
+	if shiftConfig.Kubeconfig == "" {
+		kubeconfigPath = shiftConfig.Config.KubeConfigPath(mcfg.KubeAdmin)
+	}
 
 	if err := assets.ApplyNamespaces(ns, kubeconfigPath); err != nil {
 		klog.Warningf("Failed to apply ns %v: %v", ns, err)
@@ -113,9 +120,9 @@ func applyManifests(ovnConfig *OVNKubernetesConfig, shiftConfig *mcfg.Microshift
 	extraParams := assets.RenderParams{
 		"MTU":                       ovnConfig.MTU,
 		"KubeconfigPath":            kubeconfigPath,
-		"KubeconfigDir":             filepath.Join("/var/lib", "/resources/kubeadmin"),
-		"ClusterCIDR":               shiftConfig.Cluster.ClusterCIDR,
-		"ServiceCIDR":               shiftConfig.Cluster.ServiceCIDR,
+		"KubeconfigDir":             filepath.Dir(kubeconfigPath),
+		"ClusterCIDR":               shiftConfig.Config.Cluster.ClusterCIDR,
+		"ServiceCIDR":               shiftConfig.Config.Cluster.ServiceCIDR,
 		"ovn_kubernetes_microshift": "quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:34faa03671a950607aec06a2ba515426d09f80a38101d2e91a508b5fd5316116",
 	}
 	if err := assets.ApplyConfigMaps(cm, extraParams, kubeconfigPath); err != nil {
