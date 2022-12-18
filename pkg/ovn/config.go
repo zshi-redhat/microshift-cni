@@ -64,7 +64,7 @@ func newOVNKubernetesConfigFromFile(path string) (*OVNKubernetesConfig, error) {
 func newOVNKubernetesConfig() (*OVNKubernetesConfig, error) {
 	if _, err := os.Stat(configFile); err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			klog.Info("OVNKubernetes config file not found, assuming default values")
+			klog.Infof("OVNKubernetes config file not found, assuming default values")
 			return new(OVNKubernetesConfig).withDefaults(), nil
 		}
 		return nil, fmt.Errorf("failed to get OVNKubernetes config file: %v", err)
@@ -75,6 +75,6 @@ func newOVNKubernetesConfig() (*OVNKubernetesConfig, error) {
 		return nil, fmt.Errorf("getting OVNKubernetes config: %v", err)
 	}
 
-	klog.Info("got OVNKubernetes config from file %q", configFile)
+	klog.Infof("got OVNKubernetes config from file %q", configFile)
 	return o, nil
 }
