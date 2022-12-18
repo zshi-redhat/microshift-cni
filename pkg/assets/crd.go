@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	embedded "github.com/openshift/microshift/assets"
+	embedded "github.com/zshi-redhat/microshift-cni/assets"
 
 	apiextv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	apiextclientv1 "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1"

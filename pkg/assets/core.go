@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	embedded "github.com/openshift/microshift/assets"
+	embedded "github.com/zshi-redhat/microshift-cni/assets"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"

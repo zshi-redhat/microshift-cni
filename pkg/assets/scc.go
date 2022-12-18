@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	embedded "github.com/openshift/microshift/assets"
+	embedded "github.com/zshi-redhat/microshift-cni/assets"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

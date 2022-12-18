@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	embedded "github.com/openshift/microshift/assets"
+	embedded "github.com/zshi-redhat/microshift-cni/assets"
 
 	sv1 "k8s.io/api/scheduling/v1"
 	scv1 "k8s.io/client-go/kubernetes/typed/scheduling/v1"

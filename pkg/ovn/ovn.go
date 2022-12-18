@@ -3,8 +3,8 @@ package ovn
 import (
 	"path/filepath"
 
+	mcfg "github.com/openshift/microshift/pkg/config"
 	"github.com/zshi-redhat/microshift-cni/pkg/assets"
-	"github.com/zshi-redhat/microshift-cni/pkg/config"
 	"github.com/zshi-redhat/microshift-cni/pkg/utils"
 	"k8s.io/klog/v2"
 )
@@ -13,10 +13,10 @@ const (
 	manifestDir = "/etc/microshift/ovn"
 )
 
-func InstallOVNKubernetes(shiftConfig *config.MicroshiftConfig) error {
+func InstallOVNKubernetes(shiftConfig *mcfg.MicroshiftConfig) error {
 	var err error
 
-	cfg, err := newOVNKubernetesConfig()
+	ovnConfig, err := newOVNKubernetesConfig()
 	if err != nil {
 		return err
 	}
@@ -26,7 +26,7 @@ func InstallOVNKubernetes(shiftConfig *config.MicroshiftConfig) error {
 		return err
 	}
 
-	err = applyManifests(cfg, shiftConfig)
+	err = applyManifests(ovnConfig, shiftConfig)
 
 	return nil
 }
@@ -37,7 +37,7 @@ func createGatewayBridges() error {
 
 }
 
-func applyManifests(cfg *OVNKubernetesConfig, shiftCfg *config.MicroshiftConfig) error {
+func applyManifests(ovnConfig *OVNKubernetesConfig, shiftConfig *mcfg.MicroshiftConfig) error {
 	var (
 		ns = []string{
 			"ovn-kubernetes/namespace.yaml",
@@ -67,7 +67,7 @@ func applyManifests(cfg *OVNKubernetesConfig, shiftCfg *config.MicroshiftConfig)
 		}
 	)
 
-	kubeconfigPath := shiftCfg.Kubeconfig
+	kubeconfigPath := shiftConfig.KubeConfigPath(mcfg.KubeAdmin)
 
 	if err := assets.ApplyNamespaces(ns, kubeconfigPath); err != nil {
 		klog.Warningf("Failed to apply ns %v: %v", ns, err)
@@ -94,7 +94,7 @@ func applyManifests(cfg *OVNKubernetesConfig, shiftCfg *config.MicroshiftConfig)
 		return err
 	}
 	extraParams := assets.RenderParams{
-		"MTU":            cfg.MTU,
+		"MTU":            ovnConfig.MTU,
 		"KubeconfigPath": kubeconfigPath,
 		"KubeconfigDir":  filepath.Join("/var/lib", "/resources/kubeadmin"),
 	}
@@ -130,7 +130,7 @@ func applyManifests(cfg *OVNKubernetesConfig, shiftCfg *config.MicroshiftConfig)
 		objs := []*uns.Unstructured{}
 
 		data := render.MakeRenderData()
-		data.Data["MTU"] = cfg.MTU
+		data.Data["MTU"] = ovnConfig.MTU
 
 		manifests, err := render.RenderDirs(manifestDir, &data)
 		if err != nil {

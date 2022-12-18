@@ -1,10 +1,9 @@
 package config
 
-type MicroshiftConfig struct {
-	// absolute path to Kubernetes kubeconfig file
-	Kubeconfig string `json:"kubeconfig,omitempty"`
-}
+import (
+	mcfg "github.com/openshift/microshift/pkg/config"
+)
 
-func NewMicroshiftConfig() *MicroshiftConfig {
-	return &MicroshiftConfig{}
+func NewMicroshiftConfig() *mcfg.MicroshiftConfig {
+	return &mcfg.MicroshiftConfig{}
 }
